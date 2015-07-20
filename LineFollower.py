@@ -6,78 +6,68 @@
 # main.py -- put your code here!
 
 try:
-    from pyb import *
+    from pyb import DAC
+    from pyb import LED
+    from pyb import Pin
+    from pyb import USB_VCP
 
-    LS = Pin('X5', Pin.IN)
-    Lservo = Servo(2)
-    Rservo = Servo(1)
-    red = Pin('Y6', Pin.OUT_PP)
-    blue = Pin('Y4', Pin.OUT_PP)
-    button = Pin('Y1', Pin.IN)
+    sensitivity, maxn, minn = .5, 255, 0
 
-    def stop():
-        LED(1).on()
-        LED(2).off()
-        LED(3).off()
-        red.low()
-        blue.low()
-        Rservo.speed(-1)
-        Lservo.speed(0)
+    com = USB_VCP()
+    light = DAC(2)
+    y1, y2, y3 = Pin('Y1', Pin.IN), Pin('Y2', Pin.IN), Pin('Y3', Pin.IN)
+    intensity, oldStr = maxn, str(y1.value()) + str(y2.value())
 
-    def moveStraight():
-        Rservo.speed(-10)
-        Lservo.speed(8.1)
+    directTab = {'1000': 1,
+                 '0001': 1,
+                 '0111': 1,
+                 '1110': 1,
+                 '1011': -1,
+                 '1101': -1,
+                 '0100': -1,
+                 '0010': -1}
 
-    def turnRight():
-        Rservo.speed(-1)
-        Lservo.speed(17)
+    def setByte(i):
+        return i.to_bytes(1)
 
-    def turnLeft():
-        Rservo.speed(-19)
-        Lservo.speed(0)
+    def limitNums(num, maxn, minn):
+        return max(minn, min(maxn, num))
 
-    def tracker():
-        stop()
-        buttonValue, currentState = 1, False
-        while True:
-            LSvalue = LS.value()
-            newButtonValue = button.value()
-            if LSvalue == 1 and currentState:
-                LED(1).off()
-                LED(2).on()
-                LED(3).off()
-                moveStraight()
-                red.low()
-                blue.high()
-                # delay(100)
-            elif currentState:
-                LED(1).off()
-                LED(3).on()
-                LED(2).off()
-                turnRight()
-                blue.low()
-                red.high()
-                # delay(100)
+    def handleLEDs(intensity, value):
+        if intensity == maxn:
+            LED(4).on()
+            LED(1).off()
+        elif intensity == minn:
+            LED(1).on()
+            LED(4).off()
+        else:
+            LED(1).off()
+            LED(4).off()
 
-            if newButtonValue != buttonValue:
-                buttonValue = newButtonValue
-                currentState = not currentState if buttonValue == 0 else currentState
-                if not currentState:
-                    stop()
+        if value > 0 and intensity != maxn:
+            LED(2).on()
+            LED(3).off()
+        elif value < 0 and intensity != minn:
+            LED(3).on()
+            LED(2).off()
+        else:
+            LED(2).off()
+            LED(3).off()
 
-    def lights():
-        while True:
-            LSvalue = LS.value()
-            if LSvalue == 1:
-                LED(2).on()
-                LED(3).off()
-            else:
-                LED(3).on()
-                LED(2).off()
+    while True:
+        v1, v2 = y1.value(), y2.value()
+        currentStr = str(v1) + str(v2)
+        usedStr = oldStr + currentStr
+        oldStr = currentStr if directTab.get(usedStr) else oldStr
 
-    tracker()
+        additive = 0 if not directTab.get(usedStr) else directTab[usedStr] * sensitivity * (maxn - minn)/255
+        intensity = limitNums(intensity + additive, maxn, minn)
+        light.write_timed(setByte(round(intensity)), 1)
 
-except BaseException as errString:
-    f = open('errorLog.txt', 'w')
-    f.write(str(errString))
+        print('Additive:', additive, 'Value:', intensity)
+        handleLEDs(intensity, additive)
+
+except BaseException as errStr:
+    f = open('error.txt', 'w')
+    f.write(str(errStr))
     f.close()
