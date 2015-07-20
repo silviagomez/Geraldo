@@ -1,0 +1,46 @@
+Written by Kevin Cole <kevin.cole@novawebcoop.org> 2015.06.20
+
+How to build Geraldo the SensorShip
+
+Per robot:
+ 1   PyBoard
+ 1   breadboard
+ 2   continuous rotation servos (BotBrain.com)
+ 3   IR line follower sensors (Keyes, Xinda or similar)
+ 2   3-color (RGB) LED modules (Keyes, Xinda or similar)
+ 1   4 x AA battery pack (or other 6 VDC supply)
+ 4   AA batteries
+
+The current design uses only a single IR line follower sensor.
+However, at least two on-line designs show three being used.
+This text describes only the current design with a single line
+follower.
+
+* For each servo, connect the three pins of the servo to the
+  (GND VIN X1) and (GND VIN X2) pins of the PyBoard.
+
+* Connect the battery pack negative (-) lead to GND pin of the IR
+  sensor and GND pin of the PyBoard. (Use the breadboard to split the
+  path in two.)
+
+* Connect the battery pack positive (+) lead to VCC (or +) pin of the
+  IR sensor and the VIN pin of the PyBoard. (Use the breadboard to
+  split the path in two.)
+
+* Connect the remaining pin (OUT or S) of the IR sensor to the X5 pin
+  of the PyBoard.
+
+* Connect the Blue (B) pin of the 3-color LED to the Y4 pin of the
+  PyBoard.
+
+* Connect the Red (R) pin of the 3-color LED to the Y6 pin of the
+  PyBoard.
+
+* Connect the negative (-) pin of the 3-color LED to GND of the PyBoard.
+
+* Each IR line follower sensor has a "potentiometer" a.k.a. "pot"
+  a.k.a. "variable resistor" which can be rotated with a small
+  screwdriver. This, together with the distance of the sensor from the
+  surface being "sensed", determines the sensitivity of the sensor,
+  and will probably require a bit of trial and error adjustment of
+  both the height and pot, in finding the best tracking setup.
