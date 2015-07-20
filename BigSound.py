@@ -50,9 +50,21 @@ scale = (pitch["C4"],
 
 buzzer = Pin("X1", Pin.OUT_PP)  # Passive buzzer
 
+playing = True
+
+
+def tick(timer):
+    global playing
+    playing = False
+
+tock = pyb.Timer(4)
+tock.init(freq=0.5)  # 0.5 Hz = Every two seconds
+tock.callback(tick)
+
 while True:
     for note in scale:
-        for duration in range(100):
+        playing = True
+        while playing:
             buzzer.high()
             udelay(int(500000.0 / note))
             buzzer.low()
