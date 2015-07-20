@@ -18,9 +18,19 @@ from pyb import *
 halfstep  = 1.0594630943592952645
 wholestep = halfstep * halfstep
 
-fundemental = 440.0
+# The fundamental pitch assumed to be an "A" regardless of the
+# frequency chosen.  The scale always starts 5 half-steps above that
+# at an arbitrary "C".
+#
+
+fundamental = input("Fundamental frequency? [440]: ")  # usb-ser-mon required!
+try:
+    fundamental = float(fundamental)
+except:
+    fundamental = 440.0
+
 pitch = {}
-pitch["C4"] = fundemental * wholestep * wholestep * halfstep
+pitch["C4"] = fundamental * wholestep * wholestep * halfstep
 pitch["D4"] = pitch["C4"] * wholestep
 pitch["E4"] = pitch["D4"] * wholestep
 pitch["F4"] = pitch["E4"] * halfstep
@@ -47,7 +57,7 @@ while True:
             udelay(int(500000.0 / note))
             buzzer.low()
             udelay(int(500000.0 / note))
-        print(int(500000.0 / note))
+        print(note)
         delay(200)
 
 # while True:
