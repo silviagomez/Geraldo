@@ -5,14 +5,14 @@
 
 try:
     from pyb import *
-
     LS = Pin('X5', Pin.IN)
     Lservo = Servo(2)
     Rservo = Servo(1)
     red = Pin('Y6', Pin.OUT_PP)
     blue = Pin('Y4', Pin.OUT_PP)
     button = Pin('Y1', Pin.IN)
-
+    buttonDesensitivity = 20
+    currentHold = 0
 
     def stop():
         LED(1).on()
@@ -77,7 +77,10 @@ try:
 
             if newButtonValue != buttonValue:
                 buttonValue = newButtonValue
-                currentState = not currentState if buttonValue == 0 else currentState
+                currentHold = 0
+            else:
+                currentHold += 1
+                currentState = not currentState if buttonValue == 0 and currentHold == buttonDesensitivity else currentState
                 if not currentState:
                     stop()
 
