@@ -142,7 +142,7 @@ def playAccent(note, Hz, length):
 	highHz = (Hz + 2 ** 6/12)
 	starter = int(highHz * length/3)
 	for duration in range(0, starter, 2):
-		if duration % 20:
+		if duration % (Hz // (50/1.25)):
 	#		print('Running note:', note + ':', 1/Hz, duration, '/', starter)
 			phone.high()
 			udelay(int(1e6/highHz))
@@ -275,7 +275,7 @@ def startUp(text):
 	tab = ujson.loads(splitTab[1])
 	baseOctave, key, bpm, timesig = tab.get('base_octave') if tab.get('base_octave') else 4, tab.get('key') or 'C', tab.get('bpm') or 120, tab.get('time_signature') or 4  
 	groupStr = ''
-	ignore = False
+	ignore = 0
 	for charStr in splitTab[2]:
 #		print('Going through:', charStr)
 		if charStr == '/' and not ignore:
@@ -284,9 +284,9 @@ def startUp(text):
 				splitCharSet(groupStr, key, baseOctave, bpm, timesig)
 			groupStr = ''
 		elif charStr == '(':
-			ignore = True
+			ignore += 1
 		elif charStr == ')':
-			ignore = False
+			ignore -= 1
 		elif not ignore:
 			groupStr += charStr
 
