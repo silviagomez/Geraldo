@@ -29,7 +29,7 @@ difference(){
 	cube(size=[1,3,1.5]);
 	}
 
-color("green")
+color("green") s
 translate([9,-.5,1]) 
 cube(size=[3,1,2]);
 
