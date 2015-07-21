@@ -1,6 +1,6 @@
 phone = pyb.Pin('X6', pyb.Pin.OUT_PP)
 
-from pyb import delay
+from pyb import udelay
 import ure
 import ujson
 
@@ -25,12 +25,12 @@ musicTab = {
 'Cb' :11,
 }
 
-sharpFlatOrder = 'BEADGFC'
+sharpFlatOrder = 'BEADGCF'
 
 scaleListing = {
 'C' : ['z', sharpFlatOrder[:]],
 'G' : ['#', sharpFlatOrder[-1]],
-'D' : ['#', sharpFlatOrder[-2]],
+'D' : ['#', sharpFlatOrder[-2:]],
 'A' : ['#', sharpFlatOrder[-3:]],
 'E' : ['#', sharpFlatOrder[-4:]],
 'B' : ['#', sharpFlatOrder[-5:]],
@@ -56,63 +56,65 @@ def playSlurred(note, Hz, length):
 	for duration in range(0, int(Hz * length), 2):
 #		print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
 		phone.high()
-		delay(int(1000/Hz))
+		udelay(int(1000000/Hz))
 		phone.low()
-		delay(int(1000/Hz))
+		udelay(int(1000000/Hz))
 	print('Done')
 
 
 def playNormal(note, Hz, length):
 #	print(note, Hz, int(Hz * length))
-	starter = int((Hz + 2 ** 1/12) * min(length/2,  .125))
+	starter = int((Hz + 2 ** 1/12) * length/3)
 	for duration in range(0, starter, 2):
 		#print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
 		phone.high()
-		delay(int(1000/(Hz + 2 ** 1/12)))
+		udelay(int(1000000/(Hz + 2 ** 1/12)))
 		phone.low()
-		delay(int(1000/(Hz + 2 ** 1/12)))
+		udelay(int(1000000/(Hz + 2 ** 1/12)))
 	for duration in range(starter, int(Hz * length), 2):
 		#print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
 		phone.high()
-		delay(int(1000/Hz))
+		udelay(int(1000000/Hz))
 		phone.low()
-		delay(int(1000/Hz))
+		udelay(int(1000000/Hz))
+	print('Finished playing Normal:',starter, int(Hz * length), Hz, int(1000000/Hz))
 	print('Done')
 
 
 def playStaccato(note, Hz, length):
 #	print(note, Hz, int(Hz * length))
-	starter = int((Hz + 2 ** 1/12) * min(length/4,  .125/2))
+	starter = int((Hz + 2 ** 1/12) * length/4)
 	for duration in range(0, starter, 2):
 #		print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
 		phone.high()
-		delay(int(1000/(Hz + 2 ** 1/12)))
+		udelay(int(1000000/(Hz + 2 ** 1/12)))
 		phone.low()
-		delay(int(1000/(Hz + 2 ** 1/12)))
+		udelay(int(1000000/(Hz + 2 ** 1/12)))
 	for duration in range(starter, int(Hz * length/2), 2):
 #		print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
 		phone.high()
-		delay(int(1000/Hz))
+		udelay(int(1000000/Hz))
 		phone.low()
-		delay(int(1000/Hz))
+		udelay(int(1000000/Hz))
+	udelay(int(length/2 * 1000000))
 	print('Done')
 
 
 def playAccent(note, Hz, length):
 	print(note, Hz, int(Hz * length))
-	starter = int((Hz + 2 ** 1/12) * min(length/.5,  .125/2.5))
+	starter = int((Hz + 2 ** 1/12) * length/.5,  .125/2.5)
 	for duration in range(0, starter, 2):
 #		print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
 		phone.high()
-		delay(int(1000/(Hz + 2 ** 1/12)))
+		udelay(int(1000000/(Hz + 2 ** 1/12)))
 		phone.low()
-		delay(int(1000/(Hz + 2 ** 1/12)))
+		udelay(int(1000000/(Hz + 2 ** 1/12)))
 	for duration in range(starter, int(Hz * length), 2):
 #		print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
 		phone.high()
-		delay(int(1000/Hz))
+		udelay(int(1000000/Hz))
 		phone.low()
-		delay(int(1000/Hz))
+		udelay(int(1000000/Hz))
 	print('Done')
 
 playNoteStyle = {
@@ -124,19 +126,25 @@ playNoteStyle = {
 
 
 def splitString(pattern, string):
-	match = ure.match(pattern, string)
+	match = ure.search(pattern, string)
 	match = match.group(0) if match else ['']
 	counterStr = ''
 	returnList = []
 	counter, matching = 0, False
-	for char in string:
-		if char == match[0] and not matching:
+	print(pattern, string, match)
+	for charStr in string:
+		if charStr == match[0] and not matching:
 			matching = True
 			returnList.insert(len(returnList), counterStr)
-			counterStr = char
+			counterStr = charStr
 			counter = 1
-		elif char == match[counter] and matching:
-			counterStr += char
+			if counter == len(match):
+				counter = 0
+				returnList.insert(len(returnList), counterStr)
+				counterStr = ''
+				matching = False
+		elif charStr == match[counter] and matching:
+			counterStr += charStr
 			counter += 1
 			if counter == len(match):
 				counter = 0
@@ -146,8 +154,9 @@ def splitString(pattern, string):
 		else:
 			matching = False
 			counter = 0
-			counterStr += char
+			counterStr += charStr
 	returnList.insert(len(returnList), counterStr)
+	print('Finished splitString:', match, returnList, counterStr)
 	return returnList
 
 
@@ -176,8 +185,8 @@ def handleSuffix(note, key, suffix, bpm, timesig):
 
 
 def handlePrefix(prefixStr, baseOctave):
-	prefixPattern = '[\-0-9]+'
-	prefix = splitStr(prefixPattern, prefixStr)
+	prefixPattern = '[-0-9]+'
+	prefix = splitString(prefixPattern, prefixStr)
 	if len(prefix) > 1:
 		return styleTab[prefix[0]] if prefix[0] else 'normal', int(prefix[1])
 	else:
@@ -191,7 +200,7 @@ def handleSplitCharSet(listset, key, baseOctave, bpm, timesig):
 	note, length = handleSuffix(note, key, suffix, bpm, timesig)
 	print(note, octave, length, style)
 	if note == 'Rz':
-		delay(int(length * 1000))
+		udelay(int(length * 1000000))
 	else:
 		playNote(note, octave, length, style)
 	print('Terminating...')
@@ -200,37 +209,38 @@ def handleSplitCharSet(listset, key, baseOctave, bpm, timesig):
 def splitCharSet(string, key, baseOctave, bpm, timesig):
 	print(string)
 	pattern = '[A-GR]'
-	listset = splitStr(pattern, string)
+	listset = splitString(pattern, string)
 	handleSplitCharSet(listset, key, baseOctave, bpm, timesig)
 
 
 def removeWhiteSpace(s):
 	newstr = ''
-	for char in s:
-		if not ure.search('\s', char):
-			newstr += char
+	for charStr in s:
+		if not ure.search('\s', charStr):
+			newstr += charStr
 	return newstr
 
 def startUp(text):
 	text = removeWhiteSpace(text)
-	pattern = char(123) + '.*?' + char(125)
-	splitTab = splitStr(pattern, text)
+	pattern = chr(123) + '.*?' + chr(125)
+	splitTab = splitString(pattern, text)
 	print(splitTab)
 	tab = ujson.loads(splitTab[1])
 	baseOctave, key, bpm, timesig = tab.get('base_octave') if tab.get('base_octave') else 4, tab.get('key') or 'C', tab.get('bpm') or 120, tab.get('time_signature') or 4  
 	groupStr = ''
-	for char in splitTab[2]:
-#		print('Going through:', char)
-		if char == '/':
+	for charStr in splitTab[2]:
+#		print('Going through:', charStr)
+		if charStr == '/':
 			if groupStr:
 				print('Starting up:', groupStr, baseOctave, key, bpm, timesig)
 				splitCharSet(groupStr, key, baseOctave, bpm, timesig)
 			groupStr = ''
 		else:
-			groupStr += char
+			groupStr += charStr
 
 def playFormat(name):
 	with open(name + '.pyMusic', 'r') as text:
 		startUp(text.read())
+
 
 playFormat('Test')
