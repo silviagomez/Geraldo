@@ -3,6 +3,7 @@ phone = pyb.Pin('X6', pyb.Pin.OUT_PP)
 from pyb import udelay
 import ure
 import ujson
+import math
 
 musicTab = {
 'Cz' : 0,
@@ -49,6 +50,8 @@ styleTab = {
 '~' : 'slurred',
 '!' : 'accented',
 '.' : 'staccato',
+'w' : 'trill',
+'^' : 'tremelo'
 }
 
 def playSlurred(note, Hz, length):
@@ -56,72 +59,116 @@ def playSlurred(note, Hz, length):
 	for duration in range(0, int(Hz * length), 2):
 #		print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
 		phone.high()
-		udelay(int(1000000/Hz))
+		udelay(int(1e6/Hz))
 		phone.low()
-		udelay(int(1000000/Hz))
+		udelay(int(1e6/Hz))
+	print('Done')
+
+
+def playTremelo(note, Hz, length):
+#	print(note, Hz, int(Hz * length))
+	for duration in range(0, int(Hz * length), 2):
+#		print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
+		if duration % 25:
+			phone.high()
+			udelay(int(1e6/Hz))
+			phone.low()
+			udelay(int(1e6/Hz))
+		else:
+			udelay(int(1e6/Hz * 2))
+	print('Done')
+
+
+def playTrill(note, Hz, length):
+#	print(note, Hz, int(Hz * length))
+	A = False
+	baseLength = int(Hz * length)
+	switchAmounts = baseLength // (Hz // 10)
+	oddAmounts = math.ceil(switchAmounts / 2)
+	evenAmounts = switchAmounts - oddAmounts
+	finalLength = baseLength + (2 ** (1/12) * evenAmounts * (Hz//10))
+	
+	for duration in range(0, int(finalLength), 2):
+#		print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
+		A = not A if (duration % (Hz // 10)) == 0 else A
+		phone.high()
+		udelay(int(1e6/(Hz if A else (Hz + 2 ** (1/12)))))
+		phone.low()
+		udelay(int(1e6/(Hz if A else (Hz + 2 ** (1/12)))))
 	print('Done')
 
 
 def playNormal(note, Hz, length):
 #	print(note, Hz, int(Hz * length))
-	starter = int((Hz + 2 ** 1/12) * length/3)
+	highHz = (Hz + 2 ** 1/12)
+	starter = int(highHz * length/4)
 	for duration in range(0, starter, 2):
-		#print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
+#		print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
 		phone.high()
-		udelay(int(1000000/(Hz + 2 ** 1/12)))
+		udelay(int(1e6/highHz))
 		phone.low()
-		udelay(int(1000000/(Hz + 2 ** 1/12)))
+		udelay(int(1e6/highHz))
 	for duration in range(starter, int(Hz * length), 2):
-		#print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
+#		print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
 		phone.high()
-		udelay(int(1000000/Hz))
+		udelay(int(1e6/Hz))
 		phone.low()
-		udelay(int(1000000/Hz))
-	print('Finished playing Normal:',starter, int(Hz * length), Hz, int(1000000/Hz))
+		udelay(int(1e6/Hz))
 	print('Done')
 
 
 def playStaccato(note, Hz, length):
 #	print(note, Hz, int(Hz * length))
-	starter = int((Hz + 2 ** 1/12) * length/4)
+	highHz = (Hz + 2 ** 1/12)
+	starter = int(highHz * length/4)
 	for duration in range(0, starter, 2):
 #		print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
 		phone.high()
-		udelay(int(1000000/(Hz + 2 ** 1/12)))
+		udelay(int(1e6/highHz))
 		phone.low()
-		udelay(int(1000000/(Hz + 2 ** 1/12)))
+		udelay(int(1e6/highHz))
 	for duration in range(starter, int(Hz * length/2), 2):
 #		print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
 		phone.high()
-		udelay(int(1000000/Hz))
+		udelay(int(1e6/Hz))
 		phone.low()
-		udelay(int(1000000/Hz))
-	udelay(int(length/2 * 1000000))
+		udelay(int(1e6/Hz))
+	udelay(int(length/2 * 1e6))
 	print('Done')
 
 
 def playAccent(note, Hz, length):
 	print(note, Hz, int(Hz * length))
-	starter = int((Hz + 2 ** 1/12) * length/.5,  .125/2.5)
+	highHz = (Hz + 2 ** 6/12)
+	starter = int(highHz * length/3)
 	for duration in range(0, starter, 2):
-#		print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
-		phone.high()
-		udelay(int(1000000/(Hz + 2 ** 1/12)))
-		phone.low()
-		udelay(int(1000000/(Hz + 2 ** 1/12)))
+		if duration % 20:
+	#		print('Running note:', note + ':', 1/Hz, duration, '/', starter)
+			phone.high()
+			udelay(int(1e6/highHz))
+			phone.low()
+			udelay(int(1e6/highHz))
+		else:
+			udelay(int(1e6/highHz * 2))
+#	udelay(int(1e6 * (length/3 - length/1.25)))
+
+	pauseLength = int((length/3 - length/1.25) * Hz)
+
 	for duration in range(starter, int(Hz * length), 2):
 #		print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
 		phone.high()
-		udelay(int(1000000/Hz))
+		udelay(int(1e6/Hz))
 		phone.low()
-		udelay(int(1000000/Hz))
+		udelay(int(1e6/Hz))
 	print('Done')
 
 playNoteStyle = {
 'slurred' : playSlurred,
 'normal'  : playNormal,
 'staccato'  : playStaccato,
-'accented' : playAccent
+'accented' : playAccent,
+'trill' : playTrill,
+'tremelo' : playTremelo
 }
 
 
@@ -200,7 +247,7 @@ def handleSplitCharSet(listset, key, baseOctave, bpm, timesig):
 	note, length = handleSuffix(note, key, suffix, bpm, timesig)
 	print(note, octave, length, style)
 	if note == 'Rz':
-		udelay(int(length * 1000000))
+		udelay(int(length * 1e6))
 	else:
 		playNote(note, octave, length, style)
 	print('Terminating...')
@@ -228,14 +275,19 @@ def startUp(text):
 	tab = ujson.loads(splitTab[1])
 	baseOctave, key, bpm, timesig = tab.get('base_octave') if tab.get('base_octave') else 4, tab.get('key') or 'C', tab.get('bpm') or 120, tab.get('time_signature') or 4  
 	groupStr = ''
+	ignore = False
 	for charStr in splitTab[2]:
 #		print('Going through:', charStr)
-		if charStr == '/':
+		if charStr == '/' and not ignore:
 			if groupStr:
 				print('Starting up:', groupStr, baseOctave, key, bpm, timesig)
 				splitCharSet(groupStr, key, baseOctave, bpm, timesig)
 			groupStr = ''
-		else:
+		elif charStr == '(':
+			ignore = True
+		elif charStr == ')':
+			ignore = False
+		elif not ignore:
 			groupStr += charStr
 
 def playFormat(name):
