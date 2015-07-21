@@ -23,11 +23,25 @@ wholestep = halfstep * halfstep
 # at an arbitrary "C".
 #
 
-fundamental = input("Fundamental frequency? [440]: ")  # usb-ser-mon required!
+# NOTE: Serial communications program on PC now REQUIRED!
+#
+fundamental = input("Fundamental frequency in Hz? [440]: ")
 try:
     fundamental = float(fundamental)
 except:
     fundamental = 440.0
+
+# Timing begins to crap out for durations less than ~ 0.2 seconds.
+# Interpreter latency issues? Unlikely. More likely is the loop
+# occasionnaly hits mid-clock-cycle. Need to figure out how to
+# restart the clock every time a note begins to play. Or, find a
+# better mechanism. Probably the later.
+#
+period = input("Note duration in seconds? [2]: ")
+try:
+    period = float(period)
+except:
+    period = 2.0
 
 pitch = {}
 pitch["C4"] = fundamental * wholestep * wholestep * halfstep
@@ -58,7 +72,7 @@ def tick(timer):
     playing = False
 
 tock = pyb.Timer(4)
-tock.init(freq=0.5)  # 0.5 Hz = Every two seconds
+tock.init(freq=(1.0/period))  # frequency in Hz. = (1 / period)
 tock.callback(tick)
 
 while True:
