@@ -15,7 +15,7 @@ from pyb import *
 
 # The chromatic scale is based on the 12th root of 2 = 1.0594630943592952645
 
-halfstep  = 1.0594630943592952645
+halfstep  = 2 ** (1/12)  # 1.0594630943592952645
 wholestep = halfstep * halfstep
 
 # The fundamental pitch assumed to be an "A" regardless of the
