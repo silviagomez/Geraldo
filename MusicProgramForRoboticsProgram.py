@@ -6,6 +6,7 @@ import ujson
 import math
 
 musicTab = {
+'B#' : 0,
 'Cz' : 0,
 'C#' : 1,
 'Db' : 1,
@@ -13,6 +14,8 @@ musicTab = {
 'D#' : 3,
 'Eb' : 3,
 'Ez' : 4,
+'Fb': 4,
+'E#' : 5,
 'Fz' : 5,
 'F#' : 6,
 'Gb' : 6,
