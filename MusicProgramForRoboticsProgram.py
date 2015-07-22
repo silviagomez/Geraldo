@@ -228,9 +228,9 @@ def handleSuffix(note, key, suffix, bpm, timesig):
 		if suffix[0] in 'zb#':
 			tonal = note + suffix[0]
 			if len(suffix) > 1:
-				length = 60 * (timesig / int(suffix[1:])) / bpm
+				length = 60 * (timesig / float(suffix[1:])) / bpm
 		else:
-			length = 60 * (timesig / int(suffix[:])) / bpm
+			length = 60 * (timesig / float(suffix[:])) / bpm
 	return tonal, length
 
 
