@@ -1,5 +1,5 @@
 # main.py -- put your code here!
-
+#original code for Geraldo, in short the first line-following following code
 
 from pyb import *
 
