@@ -1,3 +1,88 @@
+'''
+/Intro/
+
+Congratulations! This is George Ung. You are reading the program that tells your PyBoard how to sing (with a passive buzzer)!
+This is set up to be on pin X6. On the bottom, you call the function "playFormat" with the name 
+of the ".pyMusic" file (but you have to omit the ".pyMusic" part since it automatically
+puts is on the end).
+
+
+/How does the program work/
+
+The program first opens a ".pyMusic" file and remove all the whitespace characters (like tabs, spacebars, line feeds).
+It then finds a JSON table using "Regular Expressions" and set defaults for this program to output the score.
+After that, it reads through the score and reads each notes in-between two forward slashes.
+The note contains information on how to play the note and must be splitted up into individual parts.
+Each part tells important information on how to play and then runs the playing function.
+
+The pitches you hear are based off of how frequent you hear 1 pitch. The A440 (4th octave A) is 440 Hz meaning that
+the pitch you hear is actually played 440 times a second. Each half-step adds or subtracts 2 ^ (1/12) to a multiplier
+(A440 having 2 ^ (0/12) or simply 1) and multiplys it by 440 to get how fast does the buzzer fluctuate.
+
+
+/How to score/
+
+There are two main parts of the scoring sheet:
+	- The JSON table
+	- The notes
+
+The JSON table basically indicates the 4 basic settings of PyMusic:
+	-	"key" takes a Major scale (indicated in "scaleListing") and defaults to the key of "C". 
+	This is used for automatically setting the notes to a flat, natural, or sharp.
+	-	"bpm" takes a number (never tested with a float) which stands for the "beats per minute." Defaults to 120 BPM.
+	-	"time_signature" takes pref. an int to decide which note is 1 beat (i.e. set it to 4 to make quarter notes equal a beat).
+	-	"base_octave" takes an int to automatically set notes to a certain octave. Defaults to 4.
+
+After that comes the actual notes. Notes come in a look like this:
+/C/
+
+or this:
+
+/E#/
+
+or even this:
+
+/!6Fz4/
+
+
+Let's break this down to understand each part of a note.
+A note is first seperated into three parts:
+-	Prefix
+-	Note
+-	Suffix
+
+The Prefix contains:
+-	How the note is played
+-	What octave the note is played in.
+
+Omitting the symbol to how the note is played defaults to playing it normally. You can find a list in "styleTab" in this code.
+Omitted the octave defaults to the "base_octave" set earlier in the code.
+
+The Note contains:
+-	The literal letter of the note.
+
+This indicates what note should be played. You can replace the note with a "R" to rest instead. "R" supports length of a note.
+
+The Suffix contains:
+-	Flat, Natural, Sharp accidentals
+-	How long the note is played for
+
+Flat, Natural, Sharps override the default accidental for the note. Flats are indicated as "b", Naturals are indicated as "z", and Sharps are indicated as "#".
+How long the note is played is a number (supports float) that defaults to 1 beat. The number corresponds to the name of the note
+(i.e. 4 is a quarter note, 1 is a whole note, 2 is a half note, 32 is a thirty-second note, 3 is a dotted quarter note)
+
+
+(Note: Commenting out code uses parentheses. If I wanted to make a comment in the middle of the score (or even a note), you can simply do:
+(This code won't read this. Please don't put parentheses in parentheses)
+)
+
+/Outro/
+
+I know this isn't much of a tutorial and it's kinda wordy and probably not the most ideal way to understand how the code works or how to score,
+but if you just try working stuff out in your own time, you may suprise yourself with what you could make.
+'''
+
+
 phone = pyb.Pin('X6', pyb.Pin.OUT_PP)
 
 from pyb import udelay
