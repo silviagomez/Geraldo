@@ -1,3 +1,9 @@
+//3d model of what the robot would've looked like
+//obviously not to be printed out right away, but there's
+//bits and pieces that can be used to print them out
+//individualy so...
+// :) 
+
 //larger yellow square//////////////////
 difference(){
 color("steelblue")
