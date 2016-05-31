@@ -1,10 +1,12 @@
 '''/Intro/
 
-Congratulations! This is George Ung. You are reading the program that
-tells your PyBoard how to sing (with a passive buzzer)!  This is set
-up to be on pin X6. On the bottom, you call the function "playFormat"
-with the name of the ".pyMusic" file (but you have to omit the
-".pyMusic" part since it automatically puts is on the end).
+Congratulations! This is Kevin Cole channeling George Ung. (George's
+program was designed for the PyBoard. This is a simple port to the
+Raspberry Py.) You are reading the program that tells your Raspberry
+Pi how to sing (with a passive buzzer)!  This is set up to be on pin
+12 (BOARD) a.k.a. pin 18 (BCM). On the bottom, you call the function
+"playFormat" with the name of the ".pyMusic" file (but you have to
+omit the ".pyMusic" part since it automatically puts is on the end).
 
 
 /How does the program work/
@@ -106,17 +108,16 @@ I know this isn't much of a tutorial and it's kinda wordy and probably
 not the most ideal way to understand how the code works or how to score,
 but if you just try working stuff out in your own time, you may
 suprise yourself with what you could make.
+
 '''
 
 import RPi.GPIO as GPIO
 
 GPIO.setmode(GPIO.BCM)     # Use BCM-style   numbering
-GPIO.setmode(GPIO.BOARD)   # Use Board-style numbering
-GPIO.setup(12, GPIO.OUT)   # Pin 12 is now an output pin
+#GPIO.setmode(GPIO.BOARD)  # Use Board-style numbering
+GPIO.setup(18, GPIO.OUT)   # Pin 12 is now an output pin
 
-phone = pyb.Pin('X6', pyb.Pin.OUT_PP)
-
-from pyb import udelay
+from time import sleep
 import re
 import json
 import math
@@ -172,10 +173,10 @@ def playSlurred(note, Hz, length):
 #    print(note, Hz, int(Hz * length))
     for duration in range(0, int(Hz * length), 2):
 #        print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
-        GPIO.output(12, GPIO.HIGH)  # Set pin 12 high  (on / True / 1)
-        udelay(int(1e6/Hz))
-        GPIO.output(12, GPIO.LOW)
-        udelay(int(1e6/Hz))
+        GPIO.output(18, GPIO.HIGH)  # Set pin 12 high  (on / True / 1)
+        sleep((1e6/Hz)/1000000.0)
+        GPIO.output(18, GPIO.LOW)
+        sleep((1e6/Hz)/1000000.0)
     print('Done')
 
 
@@ -184,12 +185,12 @@ def playTremelo(note, Hz, length):
     for duration in range(0, int(Hz * length), 2):
 #        print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
         if duration % 25:
-            GPIO.output(12, GPIO.HIGH)
-            udelay(int(1e6/Hz))
-            GPIO.output(12, GPIO.LOW)
-            udelay(int(1e6/Hz))
+            GPIO.output(18, GPIO.HIGH)
+            sleep((1e6/Hz)/1000000.0)
+            GPIO.output(18, GPIO.LOW)
+            sleep((1e6/Hz)/1000000.0)
         else:
-            udelay(int(1e6/Hz * 2))
+            sleep((1e6/Hz * 2)/1000000.0)
     print('Done')
 
 
@@ -205,10 +206,10 @@ def playTrill(note, Hz, length):
     for duration in range(0, int(finalLength), 2):
 #        print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
         A = not A if (duration % (Hz // 10)) == 0 else A
-        GPIO.output(12, GPIO.HIGH)
-        udelay(int(1e6/(Hz if A else (Hz + 2 ** (1/12)))))
-        GPIO.output(12, GPIO.LOW)
-        udelay(int(1e6/(Hz if A else (Hz + 2 ** (1/12)))))
+        GPIO.output(18, GPIO.HIGH)
+        sleep((1e6/(Hz if A else (Hz + 2 ** (1/12))))/1000000.0)
+        GPIO.output(18, GPIO.LOW)
+        sleep((1e6/(Hz if A else (Hz + 2 ** (1/12))))/1000000.0)
     print('Done')
 
 
@@ -218,16 +219,16 @@ def playNormal(note, Hz, length):
     starter = int(highHz * length/4)
     for duration in range(0, starter, 2):
 #        print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
-        GPIO.output(12, GPIO.HIGH)
-        udelay(int(1e6/highHz))
-        GPIO.output(12, GPIO.LOW)
-        udelay(int(1e6/highHz))
+        GPIO.output(18, GPIO.HIGH)
+        sleep((1e6/highHz)/1000000.0)
+        GPIO.output(18, GPIO.LOW)
+        sleep((1e6/highHz)/1000000.0)
     for duration in range(starter, int(Hz * length), 2):
 #        print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
-        GPIO.output(12, GPIO.HIGH)
-        udelay(int(1e6/Hz))
-        GPIO.output(12, GPIO.LOW)
-        udelay(int(1e6/Hz))
+        GPIO.output(18, GPIO.HIGH)
+        sleep((1e6/Hz)/1000000.0)
+        GPIO.output(18, GPIO.LOW)
+        sleep((1e6/Hz)/1000000.0)
     print('Done')
 
 
@@ -237,17 +238,17 @@ def playStaccato(note, Hz, length):
     starter = int(highHz * length/4)
     for duration in range(0, starter, 2):
 #        print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
-        GPIO.output(12, GPIO.HIGH)
-        udelay(int(1e6/highHz))
-        GPIO.output(12, GPIO.LOW)
-        udelay(int(1e6/highHz))
+        GPIO.output(18, GPIO.HIGH)
+        sleep((1e6/highHz)/1000000.0)
+        GPIO.output(18, GPIO.LOW)
+        sleep((1e6/highHz)/1000000.0)
     for duration in range(starter, int(Hz * length/2), 2):
 #        print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
-        GPIO.output(12, GPIO.HIGH)
-        udelay(int(1e6/Hz))
-        GPIO.output(12, GPIO.LOW)
-        udelay(int(1e6/Hz))
-    udelay(int(length/2 * 1e6))
+        GPIO.output(18, GPIO.HIGH)
+        sleep((1e6/Hz)/1000000.0)
+        GPIO.output(18, GPIO.LOW)
+        sleep((1e6/Hz)/1000000.0)
+    sleep((length/2 * 1e6)/1000000.0)
     print('Done')
 
 
@@ -258,22 +259,22 @@ def playAccent(note, Hz, length):
     for duration in range(0, starter, 2):
         if duration % (Hz // (50/1.25)):
 #            print('Running note:', note + ':', 1/Hz, duration, '/', starter)
-            GPIO.output(12, GPIO.HIGH)
-            udelay(int(1e6/highHz))
-            GPIO.output(12, GPIO.LOW)
-            udelay(int(1e6/highHz))
+            GPIO.output(18, GPIO.HIGH)
+            sleep((1e6/highHz)/1000000.0)
+            GPIO.output(18, GPIO.LOW)
+            sleep((1e6/highHz)/1000000.0)
         else:
-            udelay(int(1e6/highHz * 2))
-#    udelay(int(1e6 * (length/3 - length/1.25)))
+            sleep((1e6/highHz * 2)/1000000.0)
+#    sleep((1e6 * (length/3 - length/1.25))/1000000.0)
 
     pauseLength = int((length/3 - length/1.25) * Hz)
 
     for duration in range(starter, int(Hz * length), 2):
 #        print('Running note:', note + ':', 1/Hz, duration, '/', int(Hz * length))
-        GPIO.output(12, GPIO.HIGH)
-        udelay(int(1e6/Hz))
-        GPIO.output(12, GPIO.LOW)
-        udelay(int(1e6/Hz))
+        GPIO.output(18, GPIO.HIGH)
+        sleep((1e6/Hz)/1000000.0)
+        GPIO.output(18, GPIO.LOW)
+        sleep((1e6/Hz)/1000000.0)
     print('Done')
 
 playNoteStyle = {'slurred':  playSlurred,
@@ -359,7 +360,7 @@ def handleSplitCharSet(listset, key, baseOctave, bpm, timesig):
     note, length = handleSuffix(note, key, suffix, bpm, timesig)
     print(note, octave, length, style)
     if note == 'Rz':
-        udelay(int(length * 1e6))
+        sleep((length * 1e6)/1000000.0)
     else:
         playNote(note, octave, length, style)
     print('Terminating...')
